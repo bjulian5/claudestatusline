@@ -142,7 +142,7 @@ func TestNewStatusLineFromEvent(t *testing.T) {
 		assert.Contains(t, statusLine.Sections[0].Content, "@")
 		assert.Equal(t, "project", statusLine.Sections[1].Content)
 		assert.Equal(t, "Claude 3", statusLine.Sections[2].Content)
-		assert.Equal(t, "$0.0542", statusLine.Sections[3].Content)
+		assert.Equal(t, "0.0542", statusLine.Sections[3].Content)
 	})
 }
 
