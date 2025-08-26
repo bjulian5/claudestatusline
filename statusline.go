@@ -55,29 +55,42 @@ func NewStatusLineFromEvent(event *StatusHookEvent) (*StatusLine, error) {
 		return nil, fmt.Errorf("failed to parse context from transcript: %w", err)
 	}
 
+	sections := []Section{
+		{
+			Icon:    "",
+			Content: fmt.Sprintf("%s@%s", user, hostname),
+		},
+		{
+			Icon:    "",
+			Content: path.Base(event.Workspace.CurrentDir),
+			Color:   color.New(color.FgCyan),
+		},
+	}
+
+	if branch, err := GetGitBranch(event.Workspace.CurrentDir); err == nil {
+		sections = append(sections, Section{
+			Icon:    " ",
+			Content: branch,
+			Color:   color.New(color.FgMagenta),
+		})
+	}
+
+	sections = append(sections, []Section{
+		{
+			Icon:    " ",
+			Content: event.Model.DisplayName,
+			Color:   color.New(color.FgGreen),
+		},
+		{
+			Icon:    "",
+			Content: fmt.Sprintf("%.4f", event.Cost.TotalCostUSD),
+			Color:   color.New(color.FgYellow),
+		},
+		context.ToSection(),
+	}...)
+
 	return &StatusLine{
 		Separator: " | ",
-		Sections: []Section{
-			{
-				Icon:    "👤",
-				Content: fmt.Sprintf("%s@%s", user, hostname),
-			},
-			{
-				Icon:    "📁",
-				Content: path.Base(event.Workspace.CurrentDir),
-				Color:   color.New(color.FgCyan),
-			},
-			{
-				Icon:    "🤖",
-				Content: event.Model.DisplayName,
-				Color:   color.New(color.FgGreen),
-			},
-			{
-				Icon:    "💰",
-				Content: fmt.Sprintf("$%.4f", event.Cost.TotalCostUSD),
-				Color:   color.New(color.FgYellow),
-			},
-			context.ToSection(),
-		},
+		Sections:  sections,
 	}, nil
 }
