@@ -13,14 +13,14 @@ func main() {
 
 	var event StatusHookEvent
 	if err := json.NewDecoder(os.Stdin).Decode(&event); err != nil {
-		fmt.Fprintf(os.Stderr, "Error: failed to decode status hook event: %v\n", err)
-		os.Exit(1)
+		color.New(color.FgRed).Fprintf(os.Stdout, "Error decoding event JSON: %v\n", err)
+		return
 	}
 
 	statusLine, err := NewStatusLineFromEvent(&event)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		os.Exit(1)
+		color.New(color.FgRed).Fprintf(os.Stdout, "Error creating status line: %v\n", err)
+		return
 	}
 
 	fmt.Println(statusLine.String())
