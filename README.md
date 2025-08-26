@@ -1,10 +1,11 @@
 # Claude Status Line
 
-A status line binary for [Claude Code](https://github.com/anthropics/claude-code) that displays session information, cost tracking, and context usage in your terminal.
+A status line binary for [Claude Code](https://github.com/anthropics/claude-code) that displays session information, git branch, cost tracking, and context usage in your terminal.
 
 ## Features
 
 - **Session Info**: Shows user, hostname, and current directory
+- **Git Branch**: Displays the current git branch or commit hash
 - **Model Display**: Shows the active Claude model
 - **Cost Tracking**: Displays cumulative session cost in USD
 - **Context Usage**: Visual representation of token usage with color-coded warnings
@@ -29,9 +30,20 @@ go build -o claudestatusline
 # Add the binary to your PATH
 ```
 
-## Usage
+## Configuration
 
-Configure Claude Code to use this status line by adding it to your Claude Code settings. The binary reads Claude's status hook events from stdin and outputs a formatted status line.
+Configure Claude Code to use this status line by adding the following to your `~/.claude/settings.json` file:
+
+```json
+{
+  "statusLine": {
+    "type": "command",
+    "command": "claudestatusline"
+  }
+}
+```
+
+After adding this configuration, the status line will automatically appear in your Claude Code sessions. The binary reads Claude's status hook events from stdin and outputs a formatted status line.
 
 ## Requirements
 
