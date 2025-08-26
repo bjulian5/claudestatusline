@@ -31,6 +31,7 @@ func (t *TranscriptParser) ParseContextFromTranscript(transcriptPath string) (*C
 
 	defer transcriptFile.Close()
 	scanner := bufio.NewScanner(transcriptFile)
+	scanner.Buffer(make([]byte, 0, 64*1024), 10*1024*1024) // 10MB max line size
 	var mostRecentAssistant *TranscriptEntry
 
 	for scanner.Scan() {
