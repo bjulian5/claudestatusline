@@ -5,15 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path"
 	"strings"
 
 	"github.com/fatih/color"
 )
-
-type Pricing struct {
-	Input  int
-	Output int
-}
 
 type StatusHookEvent struct {
 	HookEventName  string    `json:"hook_event_name"`
@@ -50,6 +46,9 @@ type Cost struct {
 }
 
 func main() {
+	// Force colors even when output is not a TTY (e.g., when called by Claude)
+	color.NoColor = false
+
 	statusLine, err := buildStatusLine()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
@@ -70,14 +69,35 @@ func buildStatusLine() (*StatusLine, error) {
 		return nil, fmt.Errorf("failed to get hostname: %w", err)
 	}
 
+	tp := NewTranscriptParser()
+	context, err := tp.ParseContextFromTranscript(statusData.TranscriptPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse context from transcript: %w", err)
+	}
+
 	return &StatusLine{
 		Seperator: " | ",
 		Sections: []Section{
 			{
 				Icon:    "👤",
 				Content: fmt.Sprintf("%s@%s", user, hostname),
+			},
+			{
+				Icon:    "📁",
+				Content: path.Base(statusData.Workspace.CurrentDir),
 				Color:   color.New(color.FgCyan),
 			},
+			{
+				Icon:    "🤖",
+				Content: statusData.Model.DisplayName,
+				Color:   color.New(color.FgGreen),
+			},
+			{
+				Icon:    "💰",
+				Content: fmt.Sprintf("$%.4f", statusData.Cost.TotalCostUSD),
+				Color:   color.New(color.FgYellow),
+			},
+			context.ToSection(),
 		},
 	}, nil
 }
@@ -92,7 +112,11 @@ func (s *StatusLine) String() string {
 	parts := make([]string, len(s.Sections))
 	for i, section := range s.Sections {
 		if section.Color != nil {
-			parts[i] = section.Color.Sprintf("%s %s", section.Icon, section.Content)
+			if section.Icon == "" {
+				parts[i] = section.Color.Sprintf("%s", section.Content)
+			} else {
+				parts[i] = section.Color.Sprintf("%s %s", section.Icon, section.Content)
+			}
 		} else {
 			parts[i] = fmt.Sprintf("%s %s", section.Icon, section.Content)
 		}
